@@ -15,12 +15,12 @@ public class PhoneInit extends AsyncTask<Context, Void, Void> {
     @Override
     protected Void doInBackground(Context... params) {
 
-        while (Constants.getPhonenum() == null || Constants.getIMEI() == null) {
+        while (Constants.getInstance(params[0]).getPhonenum() == null || Constants.getInstance(params[0]).getIMEI() == null) {
 
             Log.i(Constants.TAG, "doInBackground begin");
-            Constants.initializePhoneData(params[0]);
+            Constants.getInstance(params[0]);
 
-            Log.i(Constants.TAG, "IMEI/PHONE/ " + Constants.getIMEI() + " / " + Constants.getPhonenum());
+            Log.i(Constants.TAG, "IMEI/PHONE/ " + Constants.getInstance(params[0]).getIMEI() + " / " + Constants.getInstance(params[0]).getPhonenum());
             try {
                 TimeUnit.SECONDS.sleep(3);
             } catch (InterruptedException e) {

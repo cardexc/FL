@@ -55,7 +55,7 @@ public class LocationService extends Service implements
 
         if (!isRunning) {
 
-            Requests.getMySqlIdFromServer();
+            Requests.getMySqlIdFromServer(this);
 
             isRunning = true;
 
@@ -95,10 +95,10 @@ public class LocationService extends Service implements
 
     @Override
     public void onLocationChanged(Location location) {
-        String mysqlid = Constants.getMYSQLID();
+        String mysqlid = Constants.getInstance(this).getMYSQLID();
 
         if (mysqlid == null) {
-            Requests.getMySqlIdFromServer();
+            Requests.getMySqlIdFromServer(this);
 
             return;
         }
@@ -108,7 +108,7 @@ public class LocationService extends Service implements
             Log.i(Constants.TAG, "location latt = // " + String.valueOf(location.getLatitude()));
             Log.i(Constants.TAG, "location long = // " + String.valueOf(location.getLongitude()));
 
-            Requests.setLocationToServer(location);
+            Requests.setLocationToServer(location, this);
         }
     }
 

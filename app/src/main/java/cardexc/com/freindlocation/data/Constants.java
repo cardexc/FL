@@ -9,14 +9,16 @@ import com.google.android.gms.location.LocationRequest;
 
 public class Constants {
 
-    public final static int LOCATION_REQUEST_PRIORITY_UPDATES = LocationRequest.PRIORITY_HIGH_ACCURACY;
-    public final static int LOCATION_REQUEST_INTERVAL_MILLISECONDS = 10000;
+    private static Constants mInstance;
 
-    public final static String TAG = "myapp";
+    public static final int LOCATION_REQUEST_PRIORITY_UPDATES = LocationRequest.PRIORITY_HIGH_ACCURACY;
+    public static final int LOCATION_REQUEST_INTERVAL_MILLISECONDS = 10000;
 
-    public static String MYSQLID = null;
-    public static String phonenum = null;
-    public static String IMEI = null;
+    public static final String TAG = "myapp";
+
+    public String MYSQLID = null;
+    public String phonenum = null;
+    public String IMEI = null;
 
     public static final String SERVHTTP_GETCONTACTLIST  = "http://585475.cardexc.web.hosting-test.net/frloc/frloc_getContacstList.php"; //?id=%s";
     public static final String SERVHTTP_USERPHONEEXISTS = "http://585475.cardexc.web.hosting-test.net/frloc/frloc_checkUser.php?&param1=%s&param2=%s";
@@ -26,7 +28,22 @@ public class Constants {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public static void initializePhoneData(Context context) {
+
+    private Constants(Context context) {
+        initializePhoneData(context);
+    }
+
+    public static Constants getInstance(Context context) {
+        if (mInstance == null) {
+            synchronized (Constants.class) {
+                if (mInstance == null)
+                    mInstance = new Constants(context);
+            }
+        }
+        return mInstance;
+    }
+
+    public void initializePhoneData(Context context) {
 
         if (getIMEI() == null || getPhonenum() == null) {
             TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(context.TELEPHONY_SERVICE);
@@ -45,30 +62,30 @@ public class Constants {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-    public static String getMYSQLID() {
-        return MYSQLID;
+    public String getMYSQLID() {
+        return this.MYSQLID;
     }
 
-    public static void setMYSQLID(String MYSQLID) {
-        Constants.MYSQLID = MYSQLID;
+    public void setMYSQLID(String MYSQLID) {
+        this.MYSQLID = MYSQLID;
         Log.i(TAG, "ID set:" + MYSQLID);
     }
 
-    public static String getPhonenum() {
-        return phonenum;
+    public String getPhonenum() {
+        return this.phonenum;
     }
 
-    public static void setPhonenum(String phonenum) {
-        Constants.phonenum = phonenum.replace("+","");
+    public void setPhonenum(String phonenum) {
+        this.phonenum = phonenum.replace("+","");
         Log.i(TAG, "Phonenum set:" + phonenum);
     }
 
-    public static String getIMEI() {
-        return IMEI;
+    public String getIMEI() {
+        return this.IMEI;
     }
 
-    public static void setIMEI(String IMEI) {
-        Constants.IMEI = IMEI;
+    public void setIMEI(String IMEI) {
+        this.IMEI = IMEI;
         Log.i(TAG, "IMEI set:" + IMEI);
     }
 }

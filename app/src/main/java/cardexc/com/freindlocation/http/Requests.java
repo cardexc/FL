@@ -1,5 +1,6 @@
 package cardexc.com.freindlocation.http;
 
+import android.content.Context;
 import android.location.Location;
 import android.util.Log;
 
@@ -20,6 +21,7 @@ import cardexc.com.freindlocation.data.Constants;
 
 public class Requests {
 
+    private static Context lastUsedContext;
 
     private static Response.Listener<JSONObject> responseListener = new Response.Listener<JSONObject>() {
         @Override
@@ -58,14 +60,16 @@ public class Requests {
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public static void getMySqlIdFromServer() {
+    public static void getMySqlIdFromServer(Context context) {
 
-        if (Constants.getPhonenum() == null || Constants.getIMEI() == null) {
+        setLastUsedContext(context);
+
+        if (Constants.getInstance(context).getPhonenum() == null || Constants.getInstance(context).getIMEI() == null) {
             Log.i(Constants.TAG, "getMySqlIdFromServer IMEI & PHONENUM == NULL");
             return;
         }
 
-        String url = String.format(Constants.SERVHTTP_USERPHONEEXISTS, Constants.getPhonenum(), Constants.getIMEI());
+        String url = String.format(Constants.SERVHTTP_USERPHONEEXISTS, Constants.getInstance(context).getPhonenum(), Constants.getInstance(context).getIMEI());
 
         JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.POST,
                 url, null,
@@ -73,14 +77,13 @@ public class Requests {
 
         };
 
-
         AppController.getInstance().addToRequestQueue(jsonObjReq, Constants.TAG);
 
     }
 
-    private static void setUserPhoneToServer() {
+    private static void setUserPhoneToServer(final Context context) {
 
-        if (Constants.getPhonenum() == null || Constants.getIMEI() == null) {
+        if (Constants.getInstance(context).getPhonenum() == null || Constants.getInstance(context).getIMEI() == null) {
             return;
         }
 
@@ -93,8 +96,8 @@ public class Requests {
             @Override
             protected Map<String, String> getParams() {
                 Map<String, String> params = new HashMap<String, String>();
-                params.put("param1", Constants.getPhonenum());
-                params.put("param2", Constants.getIMEI());
+                params.put("param1", Constants.getInstance(context).getPhonenum());
+                params.put("param2", Constants.getInstance(context).getIMEI());
 
                 return params;
             }
@@ -104,9 +107,11 @@ public class Requests {
         AppController.getInstance().addToRequestQueue(jsonObjReq, Constants.TAG);
     }
 
-    public static void setLocationToServer(final Location location) {
+    public static void setLocationToServer(final Location location, final Context context) {
 
-        String url = String.format(Constants.SERVHTTP_SETLOCATION, Constants.getMYSQLID(),
+        setLastUsedContext(context);
+
+        String url = String.format(Constants.SERVHTTP_SETLOCATION, Constants.getInstance(context).getMYSQLID(),
                 String.valueOf(location.getLatitude()),
                 String.valueOf(location.getLongitude()));
 
@@ -135,7 +140,7 @@ public class Requests {
 
         switch (message) {
             case "empty": {
-                setUserPhoneToServer();
+                setUserPhoneToServer(lastUsedContext);
                 break;
             }
             case "error": {
@@ -143,7 +148,7 @@ public class Requests {
                 break;
             }
             default:
-                Constants.setMYSQLID(message);
+                Constants.getInstance(lastUsedContext).setMYSQLID(message);
         }
 
     }
@@ -162,7 +167,7 @@ public class Requests {
 
         switch (message) {
             case "success": {
-                getMySqlIdFromServer();
+                getMySqlIdFromServer(lastUsedContext);
                 break;
             }
             case "error": {
@@ -170,6 +175,10 @@ public class Requests {
                 break;
             }
         }
+    }
+
+    private static synchronized void setLastUsedContext(Context context) {
+        lastUsedContext = context;
     }
 }
 
