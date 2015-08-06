@@ -20,11 +20,13 @@ public class Constants {
     public String phonenum = null;
     public String IMEI = null;
 
-    public static final String SERVHTTP_GETCONTACTLIST  = "http://585475.cardexc.web.hosting-test.net/frloc/frloc_getContacstList.php"; //?id=%s";
+    public static final String SERVHTTP_GETCONTACTLIST  = "http://585475.cardexc.web.hosting-test.net/frloc/frloc_getContacstList.php?id=%s";
     public static final String SERVHTTP_USERPHONEEXISTS = "http://585475.cardexc.web.hosting-test.net/frloc/frloc_checkUser.php?&param1=%s&param2=%s";
-    public static final String SERVHTTP_USERPHONEADD    = "http://585475.cardexc.web.hosting-test.net/frloc/frloc_addUser.php";
+    public static final String SERVHTTP_USERPHONEADD    = "http://585475.cardexc.web.hosting-test.net/frloc/frloc_addUser.php?&param1=%s&param2=%s";
     public static final String SERVHTTP_SETLOCATION     = "http://585475.cardexc.web.hosting-test.net/frloc/frloc_setLocation.php?&id=%s&lat=%s&long=%s";
+    public static final String SERVHTTP_GETCONTACTLOCATION = "http://585475.cardexc.web.hosting-test.net/frloc/frloc_getLocation.php?&userid=%s&target_phone=%s&target_imei=%s&uuid=%s";
 
+    public static final String GetContactListCommand = "GetContactListCommand";
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
