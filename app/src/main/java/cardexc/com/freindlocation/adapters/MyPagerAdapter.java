@@ -5,13 +5,19 @@ import android.app.FragmentManager;
 import android.support.v13.app.FragmentPagerAdapter;
 import android.util.Log;
 
+import cardexc.com.freindlocation.R;
 import cardexc.com.freindlocation.data.Constants;
 import cardexc.com.freindlocation.fragments.Devices;
 import cardexc.com.freindlocation.fragments.History;
 
 public class MyPagerAdapter extends FragmentPagerAdapter {
-    public MyPagerAdapter(FragmentManager fm) {
+
+    CharSequence Titles[];
+
+    public MyPagerAdapter(FragmentManager fm, CharSequence[] mTitles) {
         super(fm);
+
+        this.Titles = mTitles;
     }
 
     @Override
@@ -23,7 +29,7 @@ public class MyPagerAdapter extends FragmentPagerAdapter {
             case 1:
                 return History.newInstance();
             case 2:
-                return new Devices();
+                return History.newInstance();
 
             default:
                 return null;
@@ -33,6 +39,11 @@ public class MyPagerAdapter extends FragmentPagerAdapter {
 
     @Override
     public int getCount() {
-        return 2;
+        return Constants.TABS_COUNT;
+    }
+
+    @Override
+    public CharSequence getPageTitle(int position) {
+        return Titles[position];
     }
 }

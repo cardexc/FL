@@ -9,10 +9,14 @@ import android.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import java.util.Calendar;
+
 import cardexc.com.freindlocation.R;
+import cardexc.com.freindlocation.sqlite.ContactProvider;
 import cardexc.com.freindlocation.sqlite.HistoryProvider;
 import cardexc.com.freindlocation.sqlite.LocationContract;
 
@@ -155,21 +159,71 @@ public class History extends Fragment {
         @Override
         public void bindView(View view, Context context, Cursor cursor) {
 
-            TextView history_label_phone = (TextView) view.findViewById(R.id.history_label_phone);
-            TextView history_latitude = (TextView) view.findViewById(R.id.history_latitude);
-            TextView history_longitude = (TextView) view.findViewById(R.id.history_longitude);
-            TextView history_requested_time = (TextView) view.findViewById(R.id.history_requested_time);
+            ImageView history_contact_image_from = (ImageView) view.findViewById(R.id.history_contact_image_from);
+            ImageView history_contact_image_to = (ImageView) view.findViewById(R.id.history_contact_image_to);
+            ImageView history_image_req_type = (ImageView) view.findViewById(R.id.history_image_req_type);
 
-            String phone = cursor.getString(cursor.getColumnIndexOrThrow(LocationContract.HistoryEntry.COLUMN_PHONE));
-            String latitude = cursor.getString(cursor.getColumnIndexOrThrow(LocationContract.HistoryEntry.COLUMN_LATITUDE));
-            String longitude = cursor.getString(cursor.getColumnIndexOrThrow(LocationContract.HistoryEntry.COLUMN_LONGITUDE));
-            String req_time = cursor.getString(cursor.getColumnIndexOrThrow(LocationContract.HistoryEntry.COLUMN_REQUEST_TIME));
+            TextView history_label_from = (TextView) view.findViewById(R.id.history_label_from);
+            TextView history_label_to   = (TextView) view.findViewById(R.id.history_label_to);
+            TextView history_label_req_time_1   = (TextView) view.findViewById(R.id.history_label_req_time_1);
+            TextView history_label_req_time_2   = (TextView) view.findViewById(R.id.history_label_req_time_2);
 
-            history_label_phone.setText(phone);
-            history_latitude.setText(latitude);
-            history_longitude.setText(longitude);
-            history_requested_time.setText(req_time);
+            ///////////////////////
 
+            history_label_from.setText(getResources().getString(R.string.label_from));
+            history_label_to.setText(cursor.getString(cursor.getColumnIndexOrThrow(LocationContract.ContactEntry.COLUMN_NAME)));
+
+            ///////////////////////
+
+            fillInImage(cursor, history_image_req_type);
+
+            ///////////////////////
+            String timeStr = cursor.getString(cursor.getColumnIndexOrThrow(LocationContract.HistoryEntry.COLUMN_REQUEST_TIME));
+            if (!"".equals(timeStr) && !"null".equals(timeStr))
+                fillInRequestedTime(history_label_req_time_1, history_label_req_time_2, timeStr);
+
+            ///////////////////////
+
+            ContactProvider.setImageToView(context, history_contact_image_from, null);
+
+            String contactId = cursor.getString(cursor.getColumnIndexOrThrow(LocationContract.ContactEntry.COLUMN_CONTACTID));
+            ContactProvider.setImageToView(context, history_contact_image_to, contactId);
+
+            ///////////////////////
+        }
+
+        private void fillInImage(Cursor cursor, ImageView history_image_req_type) {
+            String request_type = cursor.getString(cursor.getColumnIndexOrThrow(LocationContract.HistoryEntry.COLUMN_REQ_TYPE));
+            switch (request_type) {
+                case (LocationContract.HistoryEntry.REQ_TYPE_IN):  {
+                    history_image_req_type.setImageResource(R.drawable.arrow_in);
+                    break;
+                }
+                case (LocationContract.HistoryEntry.REQ_TYPE_OUT):  {
+                    history_image_req_type.setImageResource(R.drawable.arrow_out);
+                    break;
+                }
+            }
+        }
+
+        private void fillInRequestedTime(TextView history_label_req_time_1, TextView history_label_req_time_2, String timeStr) {
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTimeInMillis(Long.parseLong(timeStr));
+
+            String day = String.valueOf(calendar.get(Calendar.DAY_OF_MONTH));
+            day = day.length() == 1 ? "0" + day : day;
+
+            String month = String.valueOf(calendar.get(Calendar.MONTH) + 1);
+            month = month.length() == 1 ? "0" + month : month;
+
+            String hour = String.valueOf(calendar.get(Calendar.HOUR_OF_DAY));
+            hour = hour.length() == 1 ? "0" + hour : hour;
+
+            String minute = String.valueOf(calendar.get(Calendar.MINUTE));
+            minute = minute.length() == 1 ? "0" + minute : minute;
+
+            history_label_req_time_1.setText(day + "/" + month);
+            history_label_req_time_2.setText(hour + ":" + minute);
         }
     }
 

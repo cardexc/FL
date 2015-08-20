@@ -75,11 +75,11 @@ public class LocationService extends Service implements
     public void onConnected(Bundle bundle) {
 
         if (mGoogleApiClient == null) {
-            Log.d(Constants.TAG, "onConnected G API client // mGoogleApiClient is NULL!");
+            Log.i(Constants.TAG, "onConnected G API client // mGoogleApiClient is NULL!");
             return;
         }
 
-        Log.d(Constants.TAG, "onConnected G API client");
+        Log.i(Constants.TAG, "onConnected G API client");
 
         LocationRequest locationRequest = new LocationRequest();
         locationRequest.setInterval(Constants.LOCATION_REQUEST_INTERVAL_MILLISECONDS);
@@ -108,7 +108,7 @@ public class LocationService extends Service implements
             Log.i(Constants.TAG, "location latt = // " + String.valueOf(location.getLatitude()));
             Log.i(Constants.TAG, "location long = // " + String.valueOf(location.getLongitude()));
 
-            Requests.setLocationToServer(location, this);
+            //Requests.setLocationToServer(location, this);
         }
     }
 

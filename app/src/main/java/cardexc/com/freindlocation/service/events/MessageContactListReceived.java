@@ -1,14 +1,12 @@
 package cardexc.com.freindlocation.service.events;
 
-import java.util.ArrayList;
-
-import cardexc.com.freindlocation.data.Contact;
+import java.util.Map;
 
 public class MessageContactListReceived implements  ServiceEventsInterface{
 
-    public final ArrayList<Contact> message;
+    public final Map<String, Boolean> message;
 
-    public MessageContactListReceived(ArrayList<Contact> message) {
+    public MessageContactListReceived(Map<String, Boolean> message) {
         this.message = message;
     }
 

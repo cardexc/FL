@@ -3,25 +3,32 @@ package cardexc.com.freindlocation.fragments;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
+import android.content.Intent;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
+import android.provider.ContactsContract;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import java.util.ArrayList;
+import com.melnykov.fab.FloatingActionButton;
+
+import java.io.File;
 
 import cardexc.com.freindlocation.R;
 import cardexc.com.freindlocation.data.Constants;
 import cardexc.com.freindlocation.data.Contact;
-import cardexc.com.freindlocation.service.events.MessageContactListReceived;
+import cardexc.com.freindlocation.service.events.MessageContactsUpdate;
 import cardexc.com.freindlocation.service.events.ServiceEventsInterface;
+import cardexc.com.freindlocation.sqlite.ContactProvider;
+import cardexc.com.freindlocation.sqlite.LocationContract;
 import de.greenrobot.event.EventBus;
 
 public class Devices extends Fragment {
@@ -29,87 +36,68 @@ public class Devices extends Fragment {
     EventBus eventBus;
 
     private AdapterView.OnItemClickListener onItemClickListener;
-
     private OnFragmentInteractionListener mListener;
+    private FloatingActionButton fab;
 
     ListView devices_list;
-    ArrayList<Contact> loadedContacts = new ArrayList<Contact>();
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        updateDeviceList();
+    }
 
     public Devices() {
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public void onPause() {
+        super.onPause();
+    }
 
+    @Override
+    public void onStart() {
+        super.onStart();
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        Log.i(Constants.TAG, "Devices onCreateView");
-
-        onItemClickListener = new AdapterView.OnItemClickListener() {
-
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
-                Contact item = (Contact) parent.getItemAtPosition(position);
-                mListener.onFragmentInteraction(item.getPhone(), item.getIMEI(),item.getApproved());
-            }
-        };
-
         return inflater.inflate(R.layout.fragment_devices, container, false);
-    }
-
-    @Override
-    public void onDestroyView() {
-
-        Log.i(Constants.TAG, "Devices onDestroyView");
-        super.onDestroyView();
-
-        EventBus.getDefault().unregister(this);
-
     }
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        eventBus = EventBus.getDefault();
-        eventBus.register(this);
+        /*eventBus = EventBus.getDefault();
+        eventBus.register(this);*/
 
-        ////////////////////
+        findViewsById(view);
 
-        devices_list = (ListView) view.findViewById(R.id.devices_list);
-
-        ////////////////////
-
-        Log.i(Constants.TAG, "Devices onViewCreated");
-
-        ////////////////////
+        createListeners();
 
         updateDeviceList();
 
     }
 
-    public static Devices newInstance(String param1, String param2) {
-
-        Devices fragment = new Devices();
-        return fragment;
-
-    }
-
     @Override
-    public void onStart() {
-        super.onStart();
-        Log.i(Constants.TAG, "Devices onStart");
+    public void onDestroyView() {
+
+        super.onDestroyView();
+
+        //EventBus.getDefault().unregister(this);
+
     }
 
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
+
+        eventBus = EventBus.getDefault();
+        eventBus.register(this);
+
         try {
             mListener = (OnFragmentInteractionListener) activity;
         } catch (ClassCastException e) {
@@ -122,97 +110,128 @@ public class Devices extends Fragment {
     public void onDetach() {
         super.onDetach();
         mListener = null;
+
+        EventBus.getDefault().unregister(this);
     }
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == Constants.REQUEST_CODE_PICK_CONTACTS && resultCode == -1) {
+
+            Uri contactUri = data.getData();
+            Contact.addContactToLocalDB(getActivity(), contactUri);
+
+            updateDeviceList();
+        }
+    }
 
     public void onEvent(ServiceEventsInterface event) {
 
-        if (event instanceof MessageContactListReceived) {
-
-            //Log.i(Constants.TAG, ((MessageContactListReceived) event).message.toString());
-            loadedContacts = ((MessageContactListReceived) event).message;
+        if (event instanceof MessageContactsUpdate)
             updateDeviceList();
-        }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    private void findViewsById(View view) {
+
+        devices_list = (ListView) view.findViewById(R.id.devices_list);
+
+        fab = (FloatingActionButton) view.findViewById(R.id.fab);
+        fab.attachToListView(devices_list);
+
+        //////////////////////////////////
 
     }
 
-    class DeviceAdapter extends BaseAdapter {
+    private void createListeners() {
 
-        Context ctx;
-        LayoutInflater lInflater;
+        onItemClickListener = new AdapterView.OnItemClickListener() {
 
-        DeviceAdapter(Context ctx) {
-            this.ctx = ctx;
-            lInflater = (LayoutInflater) ctx.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        }
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-        @Override
-        public int getCount() {
-            return loadedContacts.size();
-        }
-
-        @Override
-        public Object getItem(int position) {
-            return loadedContacts.get(position);
-        }
-
-        @Override
-        public long getItemId(int position) {
-            return position;
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-
-            View view = convertView;
-            if (view == null) {
-                view = lInflater.inflate(R.layout.devicestab_row, parent, false);
+                Cursor cursor = (Cursor) parent.getItemAtPosition(position);
+                mListener.onFragmentInteraction(cursor);
             }
+        };
 
-            Contact item = (Contact) getItem(position);
+        View.OnClickListener fab_listener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                chooseTheContact();
+            }
+        };
+        fab.setOnClickListener(fab_listener);
+    }
 
-            TextView label_phone = (TextView) view.findViewById(R.id.label_phone);
+    private void chooseTheContact() {
+        startActivityForResult(new Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI), Constants.REQUEST_CODE_PICK_CONTACTS);
+    }
 
-            label_phone.setText(item.getPhone());
+    public void updateDeviceList() {
 
-            return view;
+        Cursor contactCursor = ContactProvider.getInstance().getContactCursor(getActivity());
+        ContactCursorAdapter contactCursorAdapter = new ContactCursorAdapter(getActivity(), contactCursor, 0);
 
-        }
+        devices_list.setAdapter(contactCursorAdapter);
+        devices_list.setOnItemClickListener(onItemClickListener);
+
+    }
+
+    public static Devices newInstance(String param1, String param2) {
+
+        Devices fragment = new Devices();
+        return fragment;
+
+    }
+
+    public interface OnFragmentInteractionListener {
+        void onFragmentInteraction(View view);
+
+        void onFragmentInteraction(Cursor cursor);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public void updateDeviceList() {
+    public class ContactCursorAdapter extends android.support.v4.widget.CursorAdapter {
 
-        getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
+        int count = 0;
 
-                DeviceAdapter deviceAdapter = new DeviceAdapter(getActivity());
-                devices_list.setAdapter(deviceAdapter);
-                devices_list.setOnItemClickListener(onItemClickListener);
+        public ContactCursorAdapter(Context context, Cursor c, int flags) {
+            super(context, c, flags);
+        }
 
-            }
-        });
+        @Override
+        public View newView(Context context, Cursor cursor, ViewGroup parent) {
+            return LayoutInflater.from(context).inflate(R.layout.devicestab_row, parent, false);
+        }
+
+        @Override
+        public void bindView(View view, Context context, Cursor cursor) {
+
+            TextView contact_label_phone = (TextView) view.findViewById(R.id.contact_label_phone);
+            TextView contact_label_contactName = (TextView) view.findViewById(R.id.contact_label_contactName);
+            ImageView contact_image = (ImageView) view.findViewById(R.id.contact_image);
+            ImageView contact_exclamation_mark = (ImageView) view.findViewById(R.id.contact_exclamation_mark);
+
+            String phone = cursor.getString(cursor.getColumnIndexOrThrow(LocationContract.ContactEntry.COLUMN_PHONE));
+            String contactName = cursor.getString(cursor.getColumnIndexOrThrow(LocationContract.ContactEntry.COLUMN_NAME));
+            String contactId = cursor.getString(cursor.getColumnIndexOrThrow(LocationContract.ContactEntry.COLUMN_CONTACTID));
+            Boolean approved = cursor.getInt(cursor.getColumnIndexOrThrow(LocationContract.ContactEntry.COLUMN_APPROVED)) != 0;
+
+            ContactProvider.setImageToView(context, contact_image, contactId);
+
+            contact_label_phone.setText(phone);
+            contact_label_contactName.setText(contactName);
+
+            contact_exclamation_mark.setVisibility(approved ? View.INVISIBLE : View.VISIBLE);
+
+        }
+
 
 
     }
-
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p/>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
-    public interface OnFragmentInteractionListener {
-        void onFragmentInteraction(View view);
-        void onFragmentInteraction(String phone, String IMEI, Boolean approved);
-    }
-
 }

@@ -7,24 +7,40 @@ import android.util.Log;
 
 import com.google.android.gms.location.LocationRequest;
 
+import cardexc.com.freindlocation.R;
+
 public class Constants {
 
     private static Constants mInstance;
 
+    public static final int TABS_COUNT = 3;
+    public static final int CONTACTLIST_SECONDS_TO_UPDATE      = 5 * 1000;
+    public static final int HISTORY_REQUESTS_SECONDS_TO_UPDATE = 5 * 1000;
+
     public static final int LOCATION_REQUEST_PRIORITY_UPDATES = LocationRequest.PRIORITY_HIGH_ACCURACY;
     public static final int LOCATION_REQUEST_INTERVAL_MILLISECONDS = 10000;
+    public static final int REQUEST_CODE_PICK_CONTACTS  = 1;
+    public static final int ANONYMOUS_ICON  = R.drawable.anonymous_contact;
 
     public static final String TAG = "myapp";
+    public static final String CONTACTS_DIR = "/Contacts/";
+    public static final String CONTACTS_DIR_TEST   = "mnt/storage/sdcard0/contactsTesting/";
+    public static final String CONTACT_ICON_FORMAT = ".png";
 
     public String MYSQLID = null;
     public String phonenum = null;
     public String IMEI = null;
 
-    public static final String SERVHTTP_GETCONTACTLIST  = "http://585475.cardexc.web.hosting-test.net/frloc/frloc_getContacstList.php?id=%s";
-    public static final String SERVHTTP_USERPHONEEXISTS = "http://585475.cardexc.web.hosting-test.net/frloc/frloc_checkUser.php?&param1=%s&param2=%s";
-    public static final String SERVHTTP_USERPHONEADD    = "http://585475.cardexc.web.hosting-test.net/frloc/frloc_addUser.php?&param1=%s&param2=%s";
-    public static final String SERVHTTP_SETLOCATION     = "http://585475.cardexc.web.hosting-test.net/frloc/frloc_setLocation.php?&id=%s&lat=%s&long=%s";
-    public static final String SERVHTTP_GETCONTACTLOCATION = "http://585475.cardexc.web.hosting-test.net/frloc/frloc_getLocation.php?&userid=%s&target_phone=%s&target_imei=%s&uuid=%s";
+    public static final String SERVHTTP  = "http://585475.cardexc.web.hosting-test.net/frloc/";
+    public static final String SERVHTTP_GETCONTACTLIST  = SERVHTTP + "frloc_getContactList.php?userId=%s";
+    public static final String SERVHTTP_USERPHONEEXISTS = SERVHTTP + "frloc_checkUser.php?&phone=%s&imei=%s";
+    public static final String SERVHTTP_USERPHONEADD    = SERVHTTP + "frloc_addUser.php?&param1=%s&param2=%s";
+    public static final String SERVHTTP_SETLOCATION     = SERVHTTP + "frloc_setLocation.php?&id=%s&lat=%s&long=%s";
+    public static final String SERVHTTP_GETCONTACTLOCATION = SERVHTTP + "frloc_getLocation.php?&userid=%s&imei=%s&target_phone=%s&uuid=%s&requested_time=%s";
+    public static final String SERVHTTP_ADDCONTACT      = SERVHTTP + "frloc_addContact.php?&userId=%s&contactPhone=%s";
+    public static final String SERVHTTP_DELETECONTACT   = SERVHTTP + "frloc_deleteContact.php?&userId=%s&contactPhone=%s&imei=%s";
+    public static final String SERVHTTP_GETHISTORY      = SERVHTTP + "frloc_getHistoryRequests.php?&userid=%s&imei=%s";
+    public static final String SERVHTTP_SETHISTORY_UPDATED = SERVHTTP + "frloc_setHistoryUpdated.php?&uuid=%s";
 
     public static final String GetContactListCommand = "GetContactListCommand";
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -42,6 +58,7 @@ public class Constants {
                     mInstance = new Constants(context);
             }
         }
+
         return mInstance;
     }
 
@@ -53,13 +70,24 @@ public class Constants {
             String line1Number = telephonyManager.getLine1Number();
             String IMEI = telephonyManager.getDeviceId();
 
-            setPhonenum(line1Number);
+            setPhonenum(Contact.setContactNumberToNeedFormat(line1Number));
             setIMEI(IMEI);
 
         }
 
     }
 
+    public static CharSequence[] getPagesTitle(Context context) {
+
+        CharSequence titles[] = {
+            context.getResources().getString(R.string.label_contacts),
+                    context.getResources().getString(R.string.label_map),
+                    context.getResources().getString(R.string.label_History),
+        };
+
+        return titles;
+
+    }
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

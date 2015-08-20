@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+   <!-- <color name="ColorPrimary">#00897B</color>
+    <color name="ColorPrimaryDark">#00695C</color>
+    <color name="tabsScrollColor">#004D40</color>-->
+
+    <color name="ColorPrimary">#388e3c</color>
+    <color name="ColorPrimaryDark">#388e3c</color>
+    <color name="tabsScrollColor">#ffffff</color>
+
+
+    <color name="ripple">#F06292</color>
+    <color name="accent">#E91E63</color>
+    <color name="accent_pressed">#C2185B</color>
+
+    <!--<color name="ripple">#F06292</color>
+    <color name="accent">#43a047</color>
+    <color name="accent_pressed">#C2185B</color>-->
+
+
+    <color name="icon_border">#546e7a</color>
+</resources>

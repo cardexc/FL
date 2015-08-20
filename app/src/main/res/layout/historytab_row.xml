@@ -1,196 +1,126 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
+    android:descendantFocusability="blocksDescendants"
     android:focusable="false"
-    android:orientation="vertical"
-    android:descendantFocusability="blocksDescendants">
+    android:minHeight="82dp"
+    android:orientation="horizontal">
+
+    <de.hdodenhof.circleimageview.CircleImageView xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/history_contact_image_from"
+
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginTop="16dp"
+        android:minHeight="50dp"
+        android:minWidth="50dp"
+        app:border_color="@color/icon_border"
+        app:border_width="2dp" />
 
 
     <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="#3c3f41"
-        android:focusable="false"
-        android:orientation="horizontal"
-        android:paddingTop="7dp">
 
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="center_vertical"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"
+        android:layout_weight="15"
+        android:gravity="top"
+        android:orientation="horizontal"
+        android:paddingBottom="16dp"
+        android:paddingTop="20dp">
 
         <LinearLayout
-            android:id="@+id/linearLayout"
-            android:layout_width="wrap_content"
-            android:layout_height="fill_parent"
-            android:layout_weight="15"
-            android:background="#3c3f41"
-            android:focusable="false"
-            android:gravity="center"
+            android:layout_width="20dp"
+            android:layout_height="match_parent"
+            android:layout_weight="5"
             android:orientation="vertical">
 
             <TextView
-                android:id="@+id/history_label_contactName"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="left"
-                android:layout_marginLeft="10dp"
-                android:focusable="false"
-                android:text="@string/label_contactName"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:textColor="#fdfdfe" />
-
-            <TextView
-                android:id="@+id/history_label_phone"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="left"
-                android:layout_marginLeft="25dp"
-                android:focusable="false"
-                android:text=""
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textColor="#fdfdfe" />
-
+                android:id="@+id/history_label_from"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="left|center_vertical"
+                android:text="Small Text"
+                android:textAppearance="@style/TextAppearance.AppCompat.Small" />
         </LinearLayout>
+
+
 
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:focusable="false"
-            android:gravity="center"
-            android:orientation="vertical"
-            android:paddingRight="10dp">
+            android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/textView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:focusable="false"
-                android:text="@string/requestTimeLabel"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textColor="#fdfdfe" />
+            <ImageView
+                android:id="@+id/history_image_req_type"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
 
-            <TextView
-                android:id="@+id/history_requested_time"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:focusable="false"
-                android:text="@string/requestedTime"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textColor="#fdfdfe"
-
-                />
         </LinearLayout>
 
-    </LinearLayout>
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:focusable="false"
-        android:orientation="vertical">
 
         <LinearLayout
-            android:layout_width="match_parent"
+
+            android:layout_width="40dp"
             android:layout_height="match_parent"
-            android:background="#3c3f41"
-            android:focusable="false"
-            android:orientation="horizontal">
+            android:orientation="vertical">
 
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_weight="3"
-                android:focusable="false"
-                android:orientation="vertical"
-                android:paddingBottom="10dp">
+            <TextView
+                android:id="@+id/history_label_req_time_1"
+                android:layout_width="match_parent"
+                android:layout_height="23dp"
+                android:linksClickable="false"
+                android:longClickable="true"
+                android:textAppearance="?android:attr/textAppearanceSmall" />
 
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:focusable="false"
-                    android:gravity="center"
-                    android:orientation="horizontal"
-                    android:paddingLeft="25dp"
-                    android:paddingTop="5dp">
+            <TextView
+                android:id="@+id/history_label_req_time_2"
+                android:layout_width="match_parent"
+                android:layout_height="23dp"
+                android:textAppearance="?android:attr/textAppearanceSmall" />
 
-                    <TextView
-                        android:id="@+id/textView3"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:focusable="false"
-                        android:text="@string/latitudeLabel"
-                        android:textAppearance="?android:attr/textAppearanceSmall"
-                        android:textColor="#fdfdfe" />
-
-                    <TextView
-                        android:id="@+id/history_latitude"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:focusable="false"
-                        android:paddingLeft="15dp"
-                        android:text="@string/history_test_latitude"
-                        android:textAppearance="?android:attr/textAppearanceMedium"
-                        android:textColor="#fdfdfe" />
-
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:focusable="false"
-                    android:gravity="center"
-                    android:orientation="horizontal"
-                    android:paddingLeft="25dp"
-                    android:paddingTop="2dp">
-
-                    <TextView
-                        android:id="@+id/textView4"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:focusable="false"
-                        android:text="@string/longitudeLabel"
-                        android:textAppearance="?android:attr/textAppearanceSmall"
-                        android:textColor="#fdfdfe" />
-
-                    <TextView
-                        android:id="@+id/history_longitude"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:focusable="false"
-                        android:paddingLeft="4dp"
-                        android:text="@string/history_test_longitude"
-                        android:textAppearance="?android:attr/textAppearanceMedium"
-                        android:textColor="#fdfdfe" />
-                </LinearLayout>
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:background="#3c3f41"
-                android:focusable="false"
-                android:gravity="right"
-                android:orientation="horizontal"
-                android:paddingBottom="10dp">
-
-                <ImageView
-                    android:id="@+id/imageView2"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="#3c3f41"
-                    android:focusable="false"
-                    android:paddingTop="10dp" />
-
-                <ImageView
-                    android:id="@+id/imageView4"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="#3c3f41"
-                    android:focusable="false"
-                    android:paddingLeft="15dp"
-                    android:paddingRight="5dp"
-                    android:paddingTop="10dp" />
-            </LinearLayout>
         </LinearLayout>
+
+
+
+
+
+        <LinearLayout
+            android:layout_width="65dp"
+            android:layout_height="match_parent"
+            android:layout_weight="5"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/history_label_to"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical|right"
+                android:text="Small Text"
+                android:textAppearance="@style/TextAppearance.AppCompat.Small" />
+        </LinearLayout>
+
+
     </LinearLayout>
+
+    <de.hdodenhof.circleimageview.CircleImageView xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/history_contact_image_to"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginLeft="0dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginTop="16dp"
+        android:minHeight="50dp"
+        android:minWidth="50dp"
+        app:border_color="@color/icon_border"
+        app:border_width="2dp" />
+
 
 </LinearLayout>

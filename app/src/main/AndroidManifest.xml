@@ -7,6 +7,8 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
     <application
         android:name=".data.AppController"
@@ -30,7 +32,12 @@
             android:exported="true" >
         </service>
         <service
-            android:name=".service.UserService"
+            android:name=".service.ContactsUpdaterService"
+            android:enabled="true"
+            android:exported="true" >
+        </service>
+        <service
+            android:name=".service.HistoryUpdaterService"
             android:enabled="true"
             android:exported="true" >
         </service>

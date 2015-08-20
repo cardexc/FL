@@ -87,7 +87,7 @@ public class UserService extends Service {
 
                 String mysqlid = Constants.getInstance(UserService.this).getMYSQLID();
                 if (mysqlid != null) {
-                    Requests.getContactListFromServer(UserService.this);
+                    //Requests.getContactListFromServer(UserService.this);
                     break;
                 } else
                     Requests.getMySqlIdFromServer(UserService.this);
