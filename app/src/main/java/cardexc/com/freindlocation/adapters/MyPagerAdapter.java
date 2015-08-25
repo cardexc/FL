@@ -2,15 +2,13 @@ package cardexc.com.freindlocation.adapters;
 
 import android.app.Fragment;
 import android.app.FragmentManager;
-import android.support.v13.app.FragmentPagerAdapter;
-import android.util.Log;
-
-import cardexc.com.freindlocation.R;
+import android.support.v13.app.FragmentStatePagerAdapter;
 import cardexc.com.freindlocation.data.Constants;
 import cardexc.com.freindlocation.fragments.Devices;
 import cardexc.com.freindlocation.fragments.History;
+import cardexc.com.freindlocation.fragments.Map;
 
-public class MyPagerAdapter extends FragmentPagerAdapter {
+public class MyPagerAdapter extends FragmentStatePagerAdapter { //FragmentPagerAdapter {
 
     CharSequence Titles[];
 
@@ -27,7 +25,7 @@ public class MyPagerAdapter extends FragmentPagerAdapter {
             case 0:
                 return Devices.newInstance("sa", "as");
             case 1:
-                return History.newInstance();
+                return Map.newInstance();
             case 2:
                 return History.newInstance();
 

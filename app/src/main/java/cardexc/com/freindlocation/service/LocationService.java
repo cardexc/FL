@@ -51,6 +51,8 @@ public class LocationService extends Service implements
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
+        Constants.setApplicationContext(getApplicationContext());
+
         Log.i(Constants.TAG, "onStartCommand LocationService");
 
         if (!isRunning) {

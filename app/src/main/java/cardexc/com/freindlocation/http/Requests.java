@@ -24,8 +24,6 @@ import de.greenrobot.event.EventBus;
 
 public class Requests {
 
-    private static Context lastUsedContext;
-
     private static Response.Listener<JSONObject> responseListener = new Response.Listener<JSONObject>() {
 
         @Override
