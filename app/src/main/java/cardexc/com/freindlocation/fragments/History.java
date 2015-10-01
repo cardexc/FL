@@ -3,12 +3,12 @@ package cardexc.com.freindlocation.fragments;
 import android.app.Activity;
 import android.content.Context;
 import android.database.Cursor;
-import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -16,21 +16,19 @@ import android.widget.TextView;
 import java.util.Calendar;
 
 import cardexc.com.freindlocation.R;
+import cardexc.com.freindlocation.data.Constants;
+import cardexc.com.freindlocation.service.events.HistoryListUpdate;
+import cardexc.com.freindlocation.service.events.ServiceEventsInterface;
 import cardexc.com.freindlocation.sqlite.ContactProvider;
 import cardexc.com.freindlocation.sqlite.HistoryProvider;
 import cardexc.com.freindlocation.sqlite.LocationContract;
+import de.greenrobot.event.EventBus;
 
-/**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link History.OnFragmentInteractionListener} interface
- * to handle interaction events.
- * Use the {@link History#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class History extends Fragment {
 
     ListView history_list;
+    EventBus eventBus;
+    private AdapterView.OnItemClickListener onItemClickListener;
 
     public static History newInstance() {
 
@@ -41,45 +39,18 @@ public class History extends Fragment {
 
     private void updateHistory() {
 
-        Cursor historyCursor = HistoryProvider.getInstance().getHistoryCursor(getActivity());
-        HistoryCursorAdapter historyCursorAdapter = new HistoryCursorAdapter(getActivity(), historyCursor, 0);
+        Cursor historyCursor = HistoryProvider.getInstance().getHistoryCursor();
+        HistoryCursorAdapter historyCursorAdapter = new HistoryCursorAdapter(Constants.getApplicationContext(), historyCursor, 0);
 
         history_list.setAdapter(historyCursorAdapter);
+        history_list.setOnItemClickListener(onItemClickListener);
 
     }
-
-
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
 
     private OnFragmentInteractionListener mListener;
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment History.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static History newInstance(String param1, String param2) {
-        History fragment = new History();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
     public History() {
-        // Required empty public constructor
+
     }
 
     @Override
@@ -87,16 +58,11 @@ public class History extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         history_list = (ListView) view.findViewById(R.id.history_list);
-        updateHistory();
-    }
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
+        createListeners();
+
+        updateHistory();
+
     }
 
     @Override
@@ -105,15 +71,9 @@ public class History extends Fragment {
         return inflater.inflate(R.layout.fragment_history, container, false);
     }
 
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
-        }
-    }
-
     @Override
     public void onAttach(Activity activity) {
+
         super.onAttach(activity);
         try {
             mListener = (OnFragmentInteractionListener) activity;
@@ -121,27 +81,21 @@ public class History extends Fragment {
             throw new ClassCastException(activity.toString()
                     + " must implement OnFragmentInteractionListener");
         }
+
+        eventBus = EventBus.getDefault();
+        eventBus.register(this);
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
         mListener = null;
+
+        EventBus.getDefault().unregister(this);
     }
 
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p/>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
     public interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
-        public void onFragmentInteraction(Uri uri);
+        public void onFragmentInteraction(Cursor cursor, Boolean isDevice, Boolean isHistory);
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////
@@ -184,10 +138,10 @@ public class History extends Fragment {
 
             ///////////////////////
 
-            ContactProvider.setImageToView(context, history_contact_image_from, null);
+            ContactProvider.setImageToView(history_contact_image_from, null);
 
             String contactId = cursor.getString(cursor.getColumnIndexOrThrow(LocationContract.ContactEntry.COLUMN_CONTACTID));
-            ContactProvider.setImageToView(context, history_contact_image_to, contactId);
+            ContactProvider.setImageToView(history_contact_image_to, contactId);
 
             ///////////////////////
         }
@@ -196,17 +150,18 @@ public class History extends Fragment {
             String request_type = cursor.getString(cursor.getColumnIndexOrThrow(LocationContract.HistoryEntry.COLUMN_REQ_TYPE));
             switch (request_type) {
                 case (LocationContract.HistoryEntry.REQ_TYPE_IN):  {
-                    history_image_req_type.setImageResource(R.drawable.arrow_in);
+                    history_image_req_type.setImageResource(R.drawable.a_in);
                     break;
                 }
                 case (LocationContract.HistoryEntry.REQ_TYPE_OUT):  {
-                    history_image_req_type.setImageResource(R.drawable.arrow_out);
+                    history_image_req_type.setImageResource(R.drawable.a_out);
                     break;
                 }
             }
         }
 
         private void fillInRequestedTime(TextView history_label_req_time_1, TextView history_label_req_time_2, String timeStr) {
+
             Calendar calendar = Calendar.getInstance();
             calendar.setTimeInMillis(Long.parseLong(timeStr));
 
@@ -225,10 +180,31 @@ public class History extends Fragment {
             history_label_req_time_1.setText(day + "/" + month);
             history_label_req_time_2.setText(hour + ":" + minute);
         }
+
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////
 
+    private void createListeners() {
 
+        onItemClickListener = new AdapterView.OnItemClickListener() {
+
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+                Cursor cursor = (Cursor) parent.getItemAtPosition(position);
+                mListener.onFragmentInteraction(cursor, false, true);
+            }
+        };
+
+    }
+
+    public void onEvent(ServiceEventsInterface event) {
+
+        if (event instanceof HistoryListUpdate) {
+            updateHistory();
+        }
+
+    }
 }
 

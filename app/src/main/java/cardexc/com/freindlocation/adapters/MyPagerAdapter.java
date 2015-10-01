@@ -22,13 +22,15 @@ public class MyPagerAdapter extends FragmentStatePagerAdapter { //FragmentPagerA
     public Fragment getItem(int i) {
 
         switch (i) {
-            case 0:
+            case 0:{
                 return Devices.newInstance("sa", "as");
-            case 1:
-                return Map.newInstance();
-            case 2:
+            }
+            case 1:{
+                return Map.getInstance();
+            }
+            case 2:{
                 return History.newInstance();
-
+            }
             default:
                 return null;
         }

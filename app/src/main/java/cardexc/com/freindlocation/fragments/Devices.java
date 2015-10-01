@@ -5,8 +5,6 @@ import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
@@ -17,10 +15,9 @@ import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.melnykov.fab.FloatingActionButton;
-
-import java.io.File;
 
 import cardexc.com.freindlocation.R;
 import cardexc.com.freindlocation.data.Constants;
@@ -31,7 +28,8 @@ import cardexc.com.freindlocation.sqlite.ContactProvider;
 import cardexc.com.freindlocation.sqlite.LocationContract;
 import de.greenrobot.event.EventBus;
 
-public class Devices extends Fragment {
+public class Devices extends Fragment
+    implements Contact.ContactNameIsNull{
 
     EventBus eventBus;
 
@@ -40,6 +38,12 @@ public class Devices extends Fragment {
     private FloatingActionButton fab;
 
     ListView devices_list;
+    ContactCursorAdapter contactCursorAdapter;
+
+    public interface OnFragmentInteractionListener {
+
+        void onFragmentInteraction(Cursor cursor, Boolean isDevice, Boolean isHistory);
+    }
 
     @Override
     public void onResume() {
@@ -121,7 +125,7 @@ public class Devices extends Fragment {
         if (requestCode == Constants.REQUEST_CODE_PICK_CONTACTS && resultCode == -1) {
 
             Uri contactUri = data.getData();
-            Contact.addContactToLocalDB(getActivity(), contactUri);
+            Contact.addContactToLocalDB(contactUri, this);
 
             updateDeviceList();
         }
@@ -154,7 +158,7 @@ public class Devices extends Fragment {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
                 Cursor cursor = (Cursor) parent.getItemAtPosition(position);
-                mListener.onFragmentInteraction(cursor);
+                mListener.onFragmentInteraction(cursor, true, false);
             }
         };
 
@@ -173,8 +177,8 @@ public class Devices extends Fragment {
 
     public void updateDeviceList() {
 
-        Cursor contactCursor = ContactProvider.getInstance().getContactCursor(getActivity());
-        ContactCursorAdapter contactCursorAdapter = new ContactCursorAdapter(getActivity(), contactCursor, 0);
+        Cursor contactCursor = ContactProvider.getInstance().getContactCursor();
+        contactCursorAdapter = new ContactCursorAdapter(Constants.getApplicationContext(), contactCursor, 0);
 
         devices_list.setAdapter(contactCursorAdapter);
         devices_list.setOnItemClickListener(onItemClickListener);
@@ -188,11 +192,12 @@ public class Devices extends Fragment {
 
     }
 
-    public interface OnFragmentInteractionListener {
-        void onFragmentInteraction(View view);
-
-        void onFragmentInteraction(Cursor cursor);
+    @Override
+    public void ContactNameIsNull() {
+        Toast.makeText(getActivity().getApplicationContext(), getResources().getString(R.string.label_contact_name_isNull), Toast.LENGTH_LONG).show();
     }
+
+
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -222,7 +227,8 @@ public class Devices extends Fragment {
             String contactId = cursor.getString(cursor.getColumnIndexOrThrow(LocationContract.ContactEntry.COLUMN_CONTACTID));
             Boolean approved = cursor.getInt(cursor.getColumnIndexOrThrow(LocationContract.ContactEntry.COLUMN_APPROVED)) != 0;
 
-            ContactProvider.setImageToView(context, contact_image, contactId);
+            ContactProvider.setImageToView(contact_image, contactId);
+            contact_image.getDrawable();
 
             contact_label_phone.setText(phone);
             contact_label_contactName.setText(contactName);

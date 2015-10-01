@@ -18,8 +18,8 @@ public class LocationProvider {
 
     public void getContactLocation(Context context, String phone, String uuid) {
 
-        HistoryProvider.getInstance().insertRecordHistoryTab(context, phone, uuid);
-        Requests.getContactLocation(context, phone, uuid);
+        HistoryProvider.getInstance().insertRecordHistoryTab(phone, uuid);
+        Requests.getContactLocation(phone, uuid);
 
     }
 

@@ -19,16 +19,19 @@
         android:focusable="false"
         tools:context="cardexc.com.freindlocation.fragments.Devices" />
 
-
     <com.melnykov.fab.FloatingActionButton
+
         android:id="@+id/fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|right"
         android:layout_margin="16dp"
         android:src="@drawable/ic_plus"
-        fab:fab_colorNormal="@color/accent"
-        fab:fab_colorPressed="@color/accent_pressed"
-        fab:fab_colorRipple="@color/ripple" />
+        fab:fab_colorNormal="@color/myaccent"
+        fab:fab_colorPressed="@color/myaccent_pressed"
+        fab:fab_colorRipple="@color/myripple" />
+
+
+
 
 </FrameLayout>

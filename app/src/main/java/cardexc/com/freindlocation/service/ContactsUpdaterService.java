@@ -15,6 +15,7 @@ import java.util.Map;
 import cardexc.com.freindlocation.data.Constants;
 import cardexc.com.freindlocation.http.Requests;
 import cardexc.com.freindlocation.service.events.MessageContactListReceived;
+import cardexc.com.freindlocation.service.events.MessageContactsUpdate;
 import cardexc.com.freindlocation.service.events.ServiceEventsInterface;
 import cardexc.com.freindlocation.sqlite.LocationContract;
 import cardexc.com.freindlocation.sqlite.LocationDBHelper;
@@ -40,7 +41,7 @@ public class ContactsUpdaterService extends Service {
         eventBus = EventBus.getDefault();
         eventBus.register(this);
 
-        Log.i(Constants.TAG, "onStartCommand CONTACTS Updater ");
+        Log.i(Constants.TAG, "onStartCommand CONTACTS Updater service");
 
         handler = new Handler();
         runnable = new Runnable() {
@@ -49,18 +50,31 @@ public class ContactsUpdaterService extends Service {
                 if (!isWorkable)
                     return;
 
-                Log.i(Constants.TAG, "operation X ");
+                Log.i(Constants.TAG, "CUS: getting contact list from server . . .");
 
-                Requests.getContactListFromServer(getApplicationContext());
+                Requests.getContactListFromServer();
 
+                //////////////////////////////////////////////////////
+                //1.
                 LocationDBHelper locationDBHelper = new LocationDBHelper(getApplicationContext());
                 Cursor contactsToUpdateEntryCursor = locationDBHelper.getContactsToUpdateEntryCursor();
 
                 while (contactsToUpdateEntryCursor.moveToNext()) {
 
                     String contactPhone = contactsToUpdateEntryCursor.getString(0);
-                    Requests.putContactToServer(getApplicationContext(), contactPhone);
+                    Requests.putContactToServer(contactPhone);
                 }
+
+                //////////////////////////////////////////////////////
+                //2.
+                Cursor contactsToDeleteEntryCursor = locationDBHelper.getContactsToDeleteCursor();
+
+                while (contactsToDeleteEntryCursor.moveToNext()) {
+
+                    String contactPhone = contactsToDeleteEntryCursor.getString(0);
+                    Requests.deleteContactFromServer(contactPhone);
+                }
+
 
                 handler.postDelayed(runnable, Constants.CONTACTLIST_SECONDS_TO_UPDATE);
 
@@ -108,6 +122,8 @@ public class ContactsUpdaterService extends Service {
                         new String[]{contact.getKey()});
 
             }
+
+            EventBus.getDefault().post(new MessageContactsUpdate());
 
 
         }

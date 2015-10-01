@@ -7,27 +7,19 @@ import android.util.Log;
 
 import java.util.concurrent.TimeUnit;
 
-import cardexc.com.freindlocation.http.Requests;
-
 
 public class PhoneInit extends AsyncTask<Context, Void, Void> {
 
     @Override
     protected Void doInBackground(Context... params) {
 
-        while (Constants.getInstance(params[0]).getPhonenum() == null || Constants.getInstance(params[0]).getIMEI() == null) {
+        Log.i(Constants.TAG, "Getting phone number & IMEI...");
 
-            Log.i(Constants.TAG, "doInBackground begin");
-            Constants.getInstance(params[0]);
+        Constants.getInstance();
 
-            Log.i(Constants.TAG, "IMEI/PHONE/ " + Constants.getInstance(params[0]).getIMEI() + " / " + Constants.getInstance(params[0]).getPhonenum());
-            try {
-                TimeUnit.SECONDS.sleep(3);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+        Log.i(Constants.TAG, "IMEI & PHONE were set up: " + Constants.getInstance().getIMEI() + " / " + Constants.getInstance().getPhonenum());
 
-        }
         return null;
+
     }
 }

@@ -10,6 +10,7 @@ import android.util.Log;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.fitness.ConfigApi;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
@@ -57,11 +58,12 @@ public class LocationService extends Service implements
 
         if (!isRunning) {
 
-            Requests.getMySqlIdFromServer(this);
+            if (Constants.getInstance().getMYSQLID() == null)
+                Requests.getMySqlIdFromServer();
 
             isRunning = true;
 
-            mGoogleApiClient = new GoogleApiClient.Builder(this)
+            mGoogleApiClient = new GoogleApiClient.Builder(Constants.getApplicationContext())
                     .addConnectionCallbacks(this)
                     .addOnConnectionFailedListener(this)
                     .addApi(LocationServices.API)
@@ -97,10 +99,10 @@ public class LocationService extends Service implements
 
     @Override
     public void onLocationChanged(Location location) {
-        String mysqlid = Constants.getInstance(this).getMYSQLID();
+        String mysqlid = Constants.getInstance().getMYSQLID();
 
         if (mysqlid == null) {
-            Requests.getMySqlIdFromServer(this);
+            Requests.getMySqlIdFromServer();
 
             return;
         }
@@ -110,13 +112,15 @@ public class LocationService extends Service implements
             Log.i(Constants.TAG, "location latt = // " + String.valueOf(location.getLatitude()));
             Log.i(Constants.TAG, "location long = // " + String.valueOf(location.getLongitude()));
 
-            //Requests.setLocationToServer(location, this);
+            Requests.setLocationToServer(location, Constants.getApplicationContext());
         }
     }
 
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
         Log.i(Constants.TAG, "onConnectionFailed G API client");
+        isRunning = false;
+
     }
 
     @Nullable

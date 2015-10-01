@@ -19,7 +19,8 @@
         android:minHeight="50dp"
         android:minWidth="50dp"
         app:border_color="@color/icon_border"
-        app:border_width="2dp" />
+        app:border_overlay="true"
+        app:border_width="1dp" />
 
 
     <LinearLayout
@@ -51,7 +52,6 @@
         </LinearLayout>
 
 
-
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
@@ -63,7 +63,6 @@
                 android:layout_height="match_parent" />
 
         </LinearLayout>
-
 
 
         <LinearLayout
@@ -78,18 +77,19 @@
                 android:layout_height="23dp"
                 android:linksClickable="false"
                 android:longClickable="true"
-                android:textAppearance="?android:attr/textAppearanceSmall" />
+                android:textSize="12dp"
+                android:textAppearance="@style/TextAppearance.AppCompat.Small"
+                />
 
             <TextView
                 android:id="@+id/history_label_req_time_2"
                 android:layout_width="match_parent"
                 android:layout_height="23dp"
-                android:textAppearance="?android:attr/textAppearanceSmall" />
+                android:textSize="12dp"
+                android:textAppearance="@style/TextAppearance.AppCompat.Small"
+                />
 
         </LinearLayout>
-
-
-
 
 
         <LinearLayout
@@ -107,7 +107,6 @@
                 android:textAppearance="@style/TextAppearance.AppCompat.Small" />
         </LinearLayout>
 
-
     </LinearLayout>
 
     <de.hdodenhof.circleimageview.CircleImageView xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -120,7 +119,7 @@
         android:minHeight="50dp"
         android:minWidth="50dp"
         app:border_color="@color/icon_border"
-        app:border_width="2dp" />
-
+        app:border_overlay="true"
+        app:border_width="1dp" />
 
 </LinearLayout>

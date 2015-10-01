@@ -1,6 +1,7 @@
 package cardexc.com.freindlocation.http;
 
 import android.content.Context;
+import android.location.Location;
 import android.util.Log;
 
 import com.android.volley.Request;
@@ -24,6 +25,8 @@ import de.greenrobot.event.EventBus;
 
 public class Requests {
 
+    private static Long mysql_id_time_checked = null;
+
     private static Response.Listener<JSONObject> responseListener = new Response.Listener<JSONObject>() {
 
         @Override
@@ -44,6 +47,10 @@ public class Requests {
                     }
                     case "addContact": {
                         serverAnswerAnalyze_addContact(response);
+                        break;
+                    }
+                    case "deleteContact": {
+                        serverAnswerAnalyze_deleteContact(response);
                         break;
                     }
                     case "getContactsList": {
@@ -77,22 +84,25 @@ public class Requests {
         }
     };
 
-    private static synchronized void setLastUsedContext(Context context) {
-        lastUsedContext = context;
-    }
-
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public static void getMySqlIdFromServer(Context context) {
+    public static void getMySqlIdFromServer() {
 
-        setLastUsedContext(context);
+        if (mysql_id_time_checked == null) {
+            mysql_id_time_checked = System.currentTimeMillis();
+        }else{
 
-        if (Constants.getInstance(context).getPhonenum() == null || Constants.getInstance(context).getIMEI() == null) {
+            long current_time = System.currentTimeMillis();
+            if (current_time - mysql_id_time_checked < 5000)
+                return;
+        }
+
+        if (Constants.getInstance().getPhonenum() == null || Constants.getInstance().getIMEI() == null) {
             Log.i(Constants.TAG, "getMySqlIdFromServer IMEI & PHONENUM == NULL");
             return;
         }
 
-        String url = String.format(Constants.SERVHTTP_USERPHONEEXISTS, Constants.getInstance(context).getPhonenum(), Constants.getInstance(context).getIMEI());
+        String url = String.format(Constants.SERVHTTP_USERPHONEEXISTS, Constants.getInstance().getPhonenum(), Constants.getInstance().getIMEI());
 
         JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.POST,
                 url, null,
@@ -104,13 +114,13 @@ public class Requests {
 
     }
 
-    private static void setUserPhoneToServer(final Context context) {
+    private static void setUserPhoneToServer() {
 
-        if (Constants.getInstance(context).getPhonenum() == null || Constants.getInstance(context).getIMEI() == null) {
+        if (Constants.getInstance().getPhonenum() == null || Constants.getInstance().getIMEI() == null) {
             return;
         }
 
-        String url = String.format(Constants.SERVHTTP_USERPHONEADD, Constants.getInstance(context).getPhonenum(), Constants.getInstance(context).getIMEI());
+        String url = String.format(Constants.SERVHTTP_USERPHONEADD, Constants.getInstance().getPhonenum(), Constants.getInstance().getIMEI());
 
         JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.POST,
                 url, null,
@@ -120,15 +130,13 @@ public class Requests {
         AppController.getInstance().addToRequestQueue(jsonObjReq, Constants.TAG);
     }
 
-    public static void putContactToServer(final Context context, String contactPhone) {
+    public static void putContactToServer(String contactPhone) {
 
-        setLastUsedContext(context);
-
-        if (Constants.getInstance(context).getMYSQLID() == null) {
+        if (Constants.getInstance().getMYSQLID() == null) {
             return;
         }
 
-        String url = String.format(Constants.SERVHTTP_ADDCONTACT, Constants.getInstance(context).getMYSQLID(), contactPhone);
+        String url = String.format(Constants.SERVHTTP_ADDCONTACT, Constants.getInstance().getMYSQLID(), contactPhone);
 
         JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.POST,
                 url, null,
@@ -139,15 +147,13 @@ public class Requests {
 
     }
 
-    public static void deleteContactFromServer(final Context context, String contactPhone) {
+    public static void deleteContactFromServer(String contactPhone) {
 
-        setLastUsedContext(context);
-
-        if (Constants.getInstance(context).getMYSQLID() == null) {
+        if (Constants.getInstance().getMYSQLID() == null) {
             return;
         }
 
-        String url = String.format(Constants.SERVHTTP_DELETECONTACT, Constants.getInstance(context).getMYSQLID(), contactPhone, Constants.getInstance(context).getIMEI());
+        String url = String.format(Constants.SERVHTTP_DELETECONTACT, Constants.getInstance().getMYSQLID(), contactPhone, Constants.getInstance().getIMEI());
 
         JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.POST,
                 url, null,
@@ -158,56 +164,53 @@ public class Requests {
 
     }
 
+    public static void setLocationToServer(final Location location, final Context context) {
 
-//    public static void setLocationToServer(final Location location, final Context context) {
-//
-//        setLastUsedContext(context);
-//
-//        String url = String.format(Constants.SERVHTTP_SETLOCATION, Constants.getInstance(context).getMYSQLID(),
-//                String.valueOf(location.getLatitude()),
-//                String.valueOf(location.getLongitude()));
-//
-//        JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.POST,
-//                url, null,
-//                responseListener, errorListener) {
-//        };
-//
-//        AppController.getInstance().addToRequestQueue(jsonObjReq, Constants.TAG);
-//
-//    }
+        String url = String.format(Constants.SERVHTTP_SETLOCATION, Constants.getInstance().getMYSQLID(),
+                String.valueOf(location.getLatitude()),
+                String.valueOf(location.getLongitude()));
 
-    public static void getContactListFromServer(Context context) {
+        JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.POST,
+                url, null,
+                responseListener, errorListener) {
+        };
 
-        if (Constants.getInstance(context).getMYSQLID() == null) {
+        AppController.getInstance().addToRequestQueue(jsonObjReq, Constants.TAG);
+
+    }
+
+    public static void getContactListFromServer() {
+
+        if (Constants.getInstance().getMYSQLID() == null) {
+            Log.i(Constants.TAG, "getMySqlIdFromServer MYSQL_ID == NULL. Sending request...");
+            getMySqlIdFromServer();
+            return;
+        }
+
+        String url = String.format(Constants.SERVHTTP_GETCONTACTLIST, Constants.getInstance().getMYSQLID());
+
+        //Log.i(Constants.TAG, "getContactListFromServer URL=" + url);
+
+        JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.POST,
+                url, null,
+                responseListener, errorListener) {
+
+        };
+
+        AppController.getInstance().addToRequestQueue(jsonObjReq, Constants.TAG);
+
+    }
+
+    public static void getContactLocation(String target_phone, String UUID){
+
+        if (Constants.getInstance().getMYSQLID() == null) {
             Log.i(Constants.TAG, "getMySqlIdFromServer MYSQL_ID == NULL");
             return;
         }
-
-        String url = String.format(Constants.SERVHTTP_GETCONTACTLIST, Constants.getInstance(context).getMYSQLID());
-
-        Log.i(Constants.TAG, "getContactListFromServer URL=" + url);
-        JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.POST,
-                url, null,
-                responseListener, errorListener) {
-
-        };
-
-        AppController.getInstance().addToRequestQueue(jsonObjReq, Constants.TAG);
-
-    }
-
-    public static void getContactLocation(Context context, String target_phone, String UUID){
-
-        if (Constants.getInstance(context).getMYSQLID() == null) {
-            Log.i(Constants.TAG, "getMySqlIdFromServer MYSQL_ID == NULL");
-            return;
-        }
-
-        setLastUsedContext(context);
 
         String url = String.format(Constants.SERVHTTP_GETCONTACTLOCATION,
-                Constants.getInstance(context).getMYSQLID(),
-                Constants.getInstance(context).getIMEI(),
+                Constants.getInstance().getMYSQLID(),
+                Constants.getInstance().getIMEI(),
                 target_phone,
                 UUID,
                 String.valueOf(System.currentTimeMillis()));
@@ -224,18 +227,16 @@ public class Requests {
 
     }
 
-    public static void getHistoryRequests(Context context){
+    public static void getHistoryRequests(){
 
-        if (Constants.getInstance(context).getMYSQLID() == null) {
+        if (Constants.getInstance().getMYSQLID() == null) {
             Log.i(Constants.TAG, "getMySqlIdFromServer MYSQL_ID == NULL");
             return;
         }
 
-        setLastUsedContext(context);
-
         String url = String.format(Constants.SERVHTTP_GETHISTORY,
-                Constants.getInstance(context).getMYSQLID(),
-                Constants.getInstance(context).getIMEI());
+                Constants.getInstance().getMYSQLID(),
+                Constants.getInstance().getIMEI());
 
         Log.i(Constants.TAG, "getHistoryRequests URL=" + url);
 
@@ -249,9 +250,9 @@ public class Requests {
 
     }
 
-    public static void historyRequestsReceived_updateByUUID(Context context, String uuid) {
+    public static void historyRequestsReceived_updateByUUID(String uuid) {
 
-        if (Constants.getInstance(context).getMYSQLID() == null) {
+        if (Constants.getInstance().getMYSQLID() == null) {
             Log.i(Constants.TAG, "getMySqlIdFromServer MYSQL_ID == NULL");
             return;
         }
@@ -268,7 +269,7 @@ public class Requests {
 
     }
 
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     private static void serverAnswerAnalyze_getContactList(JSONObject response) {
 
@@ -331,7 +332,7 @@ public class Requests {
 
         switch (message) {
             case "empty": {
-                setUserPhoneToServer(lastUsedContext);
+                setUserPhoneToServer();
                 break;
             }
             case "error": {
@@ -339,7 +340,7 @@ public class Requests {
                 break;
             }
             default:
-                Constants.getInstance(lastUsedContext).setMYSQLID(message);
+                Constants.getInstance().setMYSQLID(message);
         }
 
     }
@@ -358,7 +359,7 @@ public class Requests {
 
         switch (message) {
             case "success": {
-                getMySqlIdFromServer(lastUsedContext);
+                getMySqlIdFromServer();
                 break;
             }
             case "error": {
@@ -391,8 +392,42 @@ public class Requests {
                 }
 
                 if (contactPhone != null)
-                    ContactProvider.getInstance().ContactsToUpdateOnServer_delete(lastUsedContext, contactPhone);
+                    ContactProvider.getInstance().ContactsToUpdateOnServer_delete(contactPhone);
 
+                break;
+            }
+            case "error": {
+                Log.i(Constants.TAG, "MYSQL / PHP Error");
+                break;
+            }
+        }
+
+    }
+
+    private static void serverAnswerAnalyze_deleteContact(JSONObject response) {
+
+        String message = null;
+        try {
+            message = (String) response.get("message");
+        } catch (JSONException e) {
+            Log.i(Constants.TAG, "Error while parsing  serverAnswerAnalyze_deleteContact" + e.getMessage());
+        }
+
+        if (message == null)
+            return;
+
+        switch (message) {
+            case "success": {
+
+                String contactPhone = null;
+                try {
+                    contactPhone = (String) response.get("contactPhone");
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+                if (contactPhone != null)
+                    ContactProvider.getInstance().ContactsToDeleteOnServer_delete(contactPhone);
                 break;
             }
             case "error": {
@@ -417,7 +452,7 @@ public class Requests {
 
         switch (message) {
             case "success": {
-                HistoryProvider.getInstance().updateLocationByRequestedUUID(lastUsedContext, response);
+                HistoryProvider.getInstance().updateLocationByRequestedUUID(response);
                 break;
             }
             case "error": {
@@ -441,7 +476,7 @@ public class Requests {
 
         switch (message) {
             case "success": {
-                HistoryProvider.getInstance().historyRequests_Analyze(lastUsedContext, response);
+                HistoryProvider.getInstance().historyRequests_Analyze(response);
                 break;
             }
             case "error": {

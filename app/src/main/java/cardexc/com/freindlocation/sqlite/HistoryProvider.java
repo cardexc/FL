@@ -1,22 +1,19 @@
 package cardexc.com.freindlocation.sqlite;
 
 import android.content.ContentValues;
-import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.sql.Time;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
-import cardexc.com.freindlocation.data.Contact;
+import cardexc.com.freindlocation.data.Constants;
 import cardexc.com.freindlocation.http.Requests;
+import cardexc.com.freindlocation.service.events.HistoryListUpdate;
+import de.greenrobot.event.EventBus;
 
 public class HistoryProvider {
 
@@ -29,32 +26,47 @@ public class HistoryProvider {
         return mInstance;
     }
 
-    public Cursor getHistoryCursor(Context context) {
+    public Cursor getHistoryCursor() {
 
-        LocationDBHelper dbHelper = new LocationDBHelper(context);
+        LocationDBHelper dbHelper = new LocationDBHelper(Constants.getApplicationContext());
         return dbHelper.getHistoryCursor();
 
     }
 
-    public void insertRecordHistoryTab(Context context, String phone, String uuid){
+    public Cursor getHistoryCursor(String phone) {
 
-        LocationDBHelper dbHelper = new LocationDBHelper(context);
+        LocationDBHelper dbHelper = new LocationDBHelper(Constants.getApplicationContext());
+        SQLiteDatabase readableDatabase = dbHelper.getReadableDatabase();
+
+        Cursor cursor = readableDatabase.rawQuery("Select * FROM " + LocationContract.HistoryEntry.TABLE_NAME
+                + " WHERE " + LocationContract.HistoryEntry.COLUMN_PHONE + " = ?"
+                , new String[]{phone});
+
+        return cursor;
+
+    }
+
+
+    public void insertRecordHistoryTab(String phone, String uuid) {
+
+        LocationDBHelper dbHelper = new LocationDBHelper(Constants.getApplicationContext());
         SQLiteDatabase db = dbHelper.getWritableDatabase();
 
         ContentValues values = new ContentValues();
 
         values.put(LocationContract.HistoryEntry.COLUMN_REQ_TYPE, LocationContract.HistoryEntry.REQ_TYPE_OUT);
-        values.put(LocationContract.HistoryEntry.COLUMN_PHONE,    phone);
-        values.put(LocationContract.HistoryEntry.COLUMN_UUID,     uuid);
+        values.put(LocationContract.HistoryEntry.COLUMN_PHONE, phone);
+        values.put(LocationContract.HistoryEntry.COLUMN_UUID, uuid);
         values.put(LocationContract.HistoryEntry.COLUMN_REQUEST_TIME, System.currentTimeMillis());
 
         db.insert(LocationContract.HistoryEntry.TABLE_NAME, null, values);
 
+        db.close();
     }
 
-    public void updateLocationByRequestedUUID(Context context, JSONObject response)  {
+    public void updateLocationByRequestedUUID(JSONObject response) {
 
-        LocationDBHelper dbHelper = new LocationDBHelper(context);
+        LocationDBHelper dbHelper = new LocationDBHelper(Constants.getApplicationContext());
         SQLiteDatabase db = dbHelper.getWritableDatabase();
 
         String uuid = "";
@@ -72,10 +84,12 @@ public class HistoryProvider {
         }
 
         db.update(LocationContract.HistoryEntry.TABLE_NAME, contentValues, "UUID = ?", new String[]{uuid});
+        db.close();
 
+        EventBus.getDefault().post(new HistoryListUpdate());
     }
 
-    public void historyRequests_Analyze(Context context, JSONObject response) {
+    public void historyRequests_Analyze(JSONObject response) {
 
         try {
 
@@ -98,7 +112,7 @@ public class HistoryProvider {
             }
 
             if (records.size() > 0) {
-                historyRequests_Proceed(context, records);
+                historyRequests_Proceed(records);
             }
 
         } catch (JSONException e) {
@@ -107,9 +121,9 @@ public class HistoryProvider {
 
     }
 
-    public void historyRequests_Proceed(Context context, List<HistoryEntity> records) {
+    public void historyRequests_Proceed(List<HistoryEntity> records) {
 
-        LocationDBHelper locationDBHelper = new LocationDBHelper(context);
+        LocationDBHelper locationDBHelper = new LocationDBHelper(Constants.getApplicationContext());
         SQLiteDatabase wdb = locationDBHelper.getWritableDatabase();
 
         for (HistoryEntity record : records) {
@@ -130,9 +144,13 @@ public class HistoryProvider {
 
         }
 
+        wdb.close();
+
         for (HistoryEntity recorD : records) {
-            Requests.historyRequestsReceived_updateByUUID(context, recorD.uuid);
+            Requests.historyRequestsReceived_updateByUUID(recorD.uuid);
         }
+
+        EventBus.getDefault().post(new HistoryListUpdate());
 
 
     }
@@ -144,4 +162,5 @@ public class HistoryProvider {
         String requested_time;
 
     }
+
 }

@@ -39,4 +39,14 @@ public class LocationContract {
 
     }
 
+    public static final class ContactsToDeleteEntry implements BaseColumns {
+
+        public static final String TABLE_NAME = "ContactsToDeleteOnServer";
+
+        public static final String COLUMN_PHONE = "phone";
+
+    }
+
+
+
 }

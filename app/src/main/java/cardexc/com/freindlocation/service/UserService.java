@@ -10,7 +10,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import cardexc.com.freindlocation.data.Constants;
-import cardexc.com.freindlocation.fragments.Devices;
 import cardexc.com.freindlocation.http.Requests;
 
 public class UserService extends Service {
@@ -85,12 +84,12 @@ public class UserService extends Service {
 
             while (true) {
 
-                String mysqlid = Constants.getInstance(UserService.this).getMYSQLID();
+                String mysqlid = Constants.getInstance().getMYSQLID();
                 if (mysqlid != null) {
                     //Requests.getContactListFromServer(UserService.this);
                     break;
                 } else
-                    Requests.getMySqlIdFromServer(UserService.this);
+                    Requests.getMySqlIdFromServer();
 
                 try {
                     TimeUnit.SECONDS.sleep(3);

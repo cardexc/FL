@@ -2,12 +2,15 @@ package cardexc.com.freindlocation.data;
 
 
 import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
 import com.google.android.gms.location.LocationRequest;
 
 import cardexc.com.freindlocation.R;
+import cardexc.com.freindlocation.http.Requests;
 
 public class Constants {
 
@@ -15,12 +18,15 @@ public class Constants {
 
     public static Context APPLICATION_CONTEXT;
 
+    public static final String SUBSCRIPTION_CODE = "101";
+    public static final int SUBSCRIPTION_REQUEST_CODE = 1001;
+
     public static final int TABS_COUNT = 3;
-    public static final int CONTACTLIST_SECONDS_TO_UPDATE      = 5 * 1000;
-    public static final int HISTORY_REQUESTS_SECONDS_TO_UPDATE = 5 * 1000;
+    public static final int CONTACTLIST_SECONDS_TO_UPDATE      = 10 * 1000;
+    public static final int HISTORY_REQUESTS_SECONDS_TO_UPDATE = 10 * 1000;
 
     public static final int LOCATION_REQUEST_PRIORITY_UPDATES = LocationRequest.PRIORITY_HIGH_ACCURACY;
-    public static final int LOCATION_REQUEST_INTERVAL_MILLISECONDS = 10000;
+    public static final int LOCATION_REQUEST_INTERVAL_MILLISECONDS = 20000;
     public static final int REQUEST_CODE_PICK_CONTACTS  = 1;
     public static final int ANONYMOUS_ICON  = R.drawable.anonymous_contact;
 
@@ -53,11 +59,11 @@ public class Constants {
         initializePhoneData(context);
     }
 
-    public static Constants getInstance(Context context) {
+    public static Constants getInstance() {
         if (mInstance == null) {
             synchronized (Constants.class) {
                 if (mInstance == null)
-                    mInstance = new Constants(context);
+                    mInstance = new Constants(getApplicationContext());
             }
         }
 
@@ -70,9 +76,16 @@ public class Constants {
             TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(context.TELEPHONY_SERVICE);
 
             String line1Number = telephonyManager.getLine1Number();
-            String IMEI = telephonyManager.getDeviceId();
 
-            setPhonenum(Contact.setContactNumberToNeedFormat(line1Number));
+            //TODO
+            if ("".equals(line1Number)) {
+                line1Number = "0952803074";
+            }
+            if (line1Number != null) {
+                setPhonenum(Contact.setContactNumberToNeedFormat(line1Number));
+            }
+
+            String IMEI = telephonyManager.getDeviceId();
             setIMEI(IMEI);
 
         }
@@ -132,6 +145,16 @@ public class Constants {
 
         if (APPLICATION_CONTEXT == null)
             APPLICATION_CONTEXT = applicationContext;
+    }
+
+    public static boolean isNetworkConnected() {
+
+        ConnectivityManager cm = (ConnectivityManager) getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo ni = cm.getActiveNetworkInfo();
+        if (ni == null) {
+            return false;
+        } else
+            return true;
     }
 
 }

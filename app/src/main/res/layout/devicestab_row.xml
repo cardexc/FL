@@ -8,10 +8,7 @@
     android:descendantFocusability="blocksDescendants"
     android:focusable="false"
     android:minHeight="82dp"
-    android:orientation="horizontal"
-
-
-    >
+    android:orientation="horizontal">
 
     <de.hdodenhof.circleimageview.CircleImageView xmlns:app="http://schemas.android.com/apk/res-auto"
         android:id="@+id/contact_image"
@@ -26,52 +23,54 @@
         android:minWidth="50dp"
 
         app:border_color="@color/icon_border"
-        app:border_width="2dp" />
+        app:border_overlay="true"
+        app:border_width="1dp" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_gravity="center_vertical"
         android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
         android:orientation="horizontal"
         android:paddingBottom="16dp"
-        android:paddingTop="20dp"
-        android:layout_marginRight="16dp">
+        android:paddingTop="20dp">
 
         <LinearLayout
-            android:orientation="vertical"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="15">
+            android:layout_weight="15"
+            android:orientation="vertical">
 
             <TextView
                 android:id="@+id/contact_label_contactName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                android:textColor="@color/icon_border" />
 
             <TextView
                 android:id="@+id/contact_label_phone"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
+                android:textAppearance="@style/TextAppearance.AppCompat.Small.Inverse" />
 
         </LinearLayout>
 
         <LinearLayout
-            android:orientation="vertical"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="center"
             android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical"
             android:paddingTop="6dp">
 
             <ImageView
 
                 android:id="@+id/contact_exclamation_mark"
-                android:src="@drawable/exclamation_mark2"
                 android:layout_width="30dp"
-                android:layout_height="30dp" />
+                android:layout_height="30dp"
+                android:src="@drawable/exclamation_mark2" />
         </LinearLayout>
 
     </LinearLayout>

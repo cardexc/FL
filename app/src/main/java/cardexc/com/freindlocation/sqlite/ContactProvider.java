@@ -6,16 +6,20 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.widget.ImageView;
 
-import java.io.File;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 
-import cardexc.com.freindlocation.R;
+import java.io.File;
+
 import cardexc.com.freindlocation.data.Constants;
 import cardexc.com.freindlocation.http.Requests;
+import cardexc.com.freindlocation.service.events.MessageContactsUpdate;
+import cardexc.com.freindlocation.sqlite.LocationContract.*;
+import de.greenrobot.event.EventBus;
+
 
 public class ContactProvider {
 
@@ -29,16 +33,34 @@ public class ContactProvider {
         return mInstance;
     }
 
-    public Cursor getContactCursor(Context context) {
+    public Cursor getContactCursor() {
 
-        LocationDBHelper dbHelper = new LocationDBHelper(context);
+        LocationDBHelper dbHelper = new LocationDBHelper(Constants.getApplicationContext());
         return dbHelper.getContactCursor();
 
     }
 
-    public Boolean userPhoneExists(Context context, String phone) {
+    public Cursor getContactCursorByDatabaseID(String databaseID) {
 
-        LocationDBHelper dbHelper = new LocationDBHelper(context);
+        LocationDBHelper dbHelper = new LocationDBHelper(Constants.getApplicationContext());
+
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+
+        Cursor cursor = db.query(ContactEntry.TABLE_NAME,
+                new String[]{ContactEntry._ID, ContactEntry.COLUMN_CONTACTID, ContactEntry.COLUMN_NAME, ContactEntry.COLUMN_PHONE, ContactEntry.COLUMN_APPROVED},
+                ContactEntry._ID + " = ?",
+                new String[]{databaseID},
+                null, null, null);
+
+
+        return cursor;
+
+    }
+
+
+    public Boolean userPhoneExists(String phone) {
+
+        LocationDBHelper dbHelper = new LocationDBHelper(Constants.getApplicationContext());
 
         SQLiteDatabase readableDatabase = dbHelper.getReadableDatabase();
 
@@ -53,9 +75,9 @@ public class ContactProvider {
 
     }
 
-    public void addContactNumberToContacts(Context context, String phone, String name, String contactID){
+    public void addContactNumberToContacts(String phone, String name, String contactID){
 
-        LocationDBHelper dbHelper = new LocationDBHelper(context);
+        LocationDBHelper dbHelper = new LocationDBHelper(Constants.getApplicationContext());
         SQLiteDatabase db = dbHelper.getWritableDatabase();
 
         ContentValues values = new ContentValues();
@@ -69,24 +91,42 @@ public class ContactProvider {
 
     ////////////////////////////////////////////////////////////////
 
-    public void ContactsToUpdateOnServer_insert(Context context, String contactPhone) {
+    public void ContactsToUpdateOnServer_insert(String contactPhone) {
 
         Log.i(Constants.TAG, "ContactsToUpdateOnServer_insert ");
 
         ContentValues contentValues = new ContentValues();
         contentValues.put(LocationContract.ContactsToUpdateEntry.COLUMN_PHONE, contactPhone);
 
-        LocationDBHelper dbHelper = new LocationDBHelper(context);
+        LocationDBHelper dbHelper = new LocationDBHelper(Constants.getApplicationContext());
         SQLiteDatabase writableDatabase = dbHelper.getWritableDatabase();
         writableDatabase.insert(LocationContract.ContactsToUpdateEntry.TABLE_NAME, null, contentValues);
 
     }
 
-    public void ContactsToUpdateOnServer_delete(Context context, String contactPhone) {
+    public void ContactsToDeleteOnServer_insert(String contactPhone) {
+
+        Log.i(Constants.TAG, "ContactsToDeleteOnServer_insert ");
+
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(LocationContract.ContactsToDeleteEntry.COLUMN_PHONE, contactPhone);
+
+        LocationDBHelper dbHelper = new LocationDBHelper(Constants.getApplicationContext());
+        SQLiteDatabase writableDatabase = dbHelper.getWritableDatabase();
+        writableDatabase.insert(LocationContract.ContactsToDeleteEntry.TABLE_NAME, null, contentValues);
+
+        //////////////////
+
+        deleteContact(contactPhone);
+        EventBus.getDefault().post(new MessageContactsUpdate());
+    }
+
+
+    public void ContactsToUpdateOnServer_delete(String contactPhone) {
 
         Log.i(Constants.TAG, "ContactsToUpdateOnServer_delete ");
 
-        LocationDBHelper dbHelper = new LocationDBHelper(context);
+        LocationDBHelper dbHelper = new LocationDBHelper(Constants.getApplicationContext());
         SQLiteDatabase writableDatabase = dbHelper.getWritableDatabase();
 
         writableDatabase.delete(LocationContract.ContactsToUpdateEntry.TABLE_NAME,
@@ -95,29 +135,39 @@ public class ContactProvider {
 
     }
 
-    public void deleteContact(Context context, Cursor cursor) {
+    public void ContactsToDeleteOnServer_delete(String contactPhone) {
 
-        LocationDBHelper dbHelper = new LocationDBHelper(context);
+        Log.i(Constants.TAG, "ContactsToDeleteOnServer_delete ");
+
+        LocationDBHelper dbHelper = new LocationDBHelper(Constants.getApplicationContext());
         SQLiteDatabase writableDatabase = dbHelper.getWritableDatabase();
 
-        String _ID = cursor.getString(cursor.getColumnIndexOrThrow(LocationContract.ContactEntry._ID));
-        String contactPhone = cursor.getString(cursor.getColumnIndexOrThrow(LocationContract.ContactEntry.COLUMN_PHONE));
+        writableDatabase.delete(LocationContract.ContactsToDeleteEntry.TABLE_NAME,
+                LocationContract.ContactsToDeleteEntry.COLUMN_PHONE + " = '" + contactPhone + "'",
+                null);
 
-        writableDatabase.delete(LocationContract.ContactEntry.TABLE_NAME,
-                "_ID = ?",
-                new String[]{_ID});
+        //////////////
 
-        Requests.deleteContactFromServer(context, contactPhone);
     }
 
-    public static void setImageToView(Context context, ImageView contact_image, String contactId) {
+    public void deleteContact(String contactPhone) {
+
+        LocationDBHelper dbHelper = new LocationDBHelper(Constants.getApplicationContext());
+        SQLiteDatabase writableDatabase = dbHelper.getWritableDatabase();
+
+        writableDatabase.delete(LocationContract.ContactEntry.TABLE_NAME,
+                ContactEntry.COLUMN_PHONE + " = ?",
+                new String[]{contactPhone});
+
+    }
+
+    public static void setImageToView(ImageView contact_image, String contactId) {
 
         if (contactId == null) {
             contact_image.setImageResource(Constants.ANONYMOUS_ICON);
         }
 
-        String path = context.getApplicationInfo().dataDir
-                + Constants.CONTACTS_DIR + contactId + Constants.CONTACT_ICON_FORMAT;
+        String path = getContactImagePath(contactId);
 
         File accPicFile = new File(path);
         if (!accPicFile.exists()) {
@@ -132,5 +182,36 @@ public class ContactProvider {
 
         }
     }
+
+    public static Bitmap getContactImage(String contactId) {
+
+        if (contactId == null) {
+            BitmapDescriptorFactory.fromResource(Constants.ANONYMOUS_ICON);
+        }
+
+        String path = getContactImagePath(contactId);
+
+        File accPicFile = new File(path);
+        if (!accPicFile.exists()) {
+
+            return BitmapFactory.decodeResource(Constants.getApplicationContext().getResources(), Constants.ANONYMOUS_ICON);
+
+        } else {
+
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inPreferQualityOverSpeed = true;
+
+            Bitmap accountPicture = BitmapFactory.decodeFile(accPicFile.getAbsolutePath(), options);
+            return accountPicture;
+        }
+
+    }
+
+    @NonNull
+    public static String getContactImagePath(String contactId) {
+        return Constants.getApplicationContext().getApplicationInfo().dataDir
+                    + Constants.CONTACTS_DIR + contactId + Constants.CONTACT_ICON_FORMAT;
+    }
+
 
 }

@@ -2,15 +2,12 @@ package cardexc.com.freindlocation.service;
 
 import android.app.Service;
 import android.content.Intent;
-import android.database.Cursor;
 import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
 
 import cardexc.com.freindlocation.data.Constants;
 import cardexc.com.freindlocation.http.Requests;
-import cardexc.com.freindlocation.sqlite.LocationDBHelper;
-import de.greenrobot.event.EventBus;
 
 public class HistoryUpdaterService extends Service {
 
@@ -41,7 +38,7 @@ public class HistoryUpdaterService extends Service {
 
                 Log.i(Constants.TAG, " update history requests...");
 
-                Requests.getHistoryRequests(getApplicationContext());
+                Requests.getHistoryRequests();
 
                 handler.postDelayed(runnable, Constants.HISTORY_REQUESTS_SECONDS_TO_UPDATE);
 

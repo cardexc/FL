@@ -2,10 +2,8 @@ package cardexc.com.freindlocation.data;
 
 
 import android.content.ContentUris;
-import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.provider.ContactsContract;
 import android.util.Log;
@@ -35,65 +33,40 @@ public class Contact {
     private String phone;
     private Boolean approved;
 
-//    public Contact(String id, String phone, String IMEI, Boolean approved) {
-//        this.IMEI = IMEI;
-//        this.id = id;
-//        this.phone = phone;
-//        this.approved = approved;
-//    }
-//
-//    public Contact(String id, String phone, String IMEI, Boolean approved, String name) {
-//
-//        this.name = name;
-//        this.IMEI = IMEI;
-//        this.id = id;
-//        this.phone = phone;
-//        this.approved = approved;
-//
-//    }
+    public interface ContactNameIsNull {
+        void ContactNameIsNull();
+    }
 
-//    public String getName() {
-//        return name;
-//    }
-//
-//    public String getIMEI() {
-//        return IMEI;
-//    }
-//
-//    public String getId() {
-//        return id;
-//    }
+    public static void addContactToLocalDB(Uri contactUri, Object callingObject) {
 
-
-    public static void addContactToLocalDB(Context context, Uri contactUri) {
-
-        String contactName  = retrieveContactName(context, contactUri);
-
-        Map userData        = retrieveContactNumber(context, contactUri);
+        String contactName = retrieveContactName(contactUri);
+        Map userData = retrieveContactNumber(contactUri);
 
         String contactPhone = null;
         if (userData.get("contactPhone") != null)
             contactPhone = String.valueOf(userData.get("contactPhone")).replace("+", "");
-        else
+        else {
+            ((ContactNameIsNull) callingObject).ContactNameIsNull();
             return;
-
-        String contactID    = String.valueOf(userData.get("contactID"));
-
-        retrieveContactPhoto(context, contactID);
-
-        if (!ContactProvider.getInstance().userPhoneExists(context, contactPhone)) {
-            ContactProvider.getInstance().addContactNumberToContacts(context, contactPhone, contactName, contactID);
         }
 
-        ContactProvider.getInstance().ContactsToUpdateOnServer_insert(context, contactPhone);
+        String contactID = String.valueOf(userData.get("contactID"));
+
+        retrieveContactPhoto(contactID);
+
+        if (!ContactProvider.getInstance().userPhoneExists(contactPhone)) {
+            ContactProvider.getInstance().addContactNumberToContacts(contactPhone, contactName, contactID);
+        }
+
+        ContactProvider.getInstance().ContactsToUpdateOnServer_insert(contactPhone);
 
     }
 
-    private static String retrieveContactName(Context context, Uri contactUri) {
+    private static String retrieveContactName(Uri contactUri) {
 
         String contactName = null;
 
-        Cursor cursor = context.getContentResolver().query(contactUri, null, null, null, null);
+        Cursor cursor = Constants.getApplicationContext().getContentResolver().query(contactUri, null, null, null, null);
 
         if (cursor.moveToFirst()) {
             contactName = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
@@ -104,14 +77,14 @@ public class Contact {
         return contactName;
     }
 
-    private static Map<String, String> retrieveContactNumber(Context context, Uri contactUri) {
+    private static Map<String, String> retrieveContactNumber(Uri contactUri) {
 
         HashMap<String, String> data = new HashMap<>();
         data.put("contactPhone", null);
-        data.put("contactID",    null);
+        data.put("contactID", null);
 
         // getting contacts ID
-        Cursor cursorID = context.getContentResolver().query(contactUri,
+        Cursor cursorID = Constants.getApplicationContext().getContentResolver().query(contactUri,
                 new String[]{ContactsContract.Contacts._ID},
                 null, null, null);
 
@@ -122,7 +95,7 @@ public class Contact {
 
         cursorID.close();
 
-        Cursor cursorPhone = context.getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+        Cursor cursorPhone = Constants.getApplicationContext().getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
                 new String[]{ContactsContract.CommonDataKinds.Phone.NUMBER},
 
                 ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?  AND (" +
@@ -145,13 +118,13 @@ public class Contact {
 
     }
 
-    private static void retrieveContactPhoto(Context context, String contactID) {
+    private static void retrieveContactPhoto(String contactID) {
 
         Bitmap photo = null;
 
         try {
-            InputStream inputStream = ContactsContract.Contacts.openContactPhotoInputStream(context.getContentResolver(),
-                    ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, new Long(contactID)),true);
+            InputStream inputStream = ContactsContract.Contacts.openContactPhotoInputStream(Constants.getApplicationContext().getContentResolver(),
+                    ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, new Long(contactID)), true);
 
             if (inputStream != null) {
 
@@ -159,7 +132,7 @@ public class Contact {
                 inputStream.read(stream_bytes);
 
 
-                String path = context.getApplicationInfo().dataDir
+                String path = Constants.getApplicationContext().getApplicationInfo().dataDir
                         + Constants.CONTACTS_DIR;
 
                 File directory = new File(path);
@@ -183,7 +156,7 @@ public class Contact {
                 inputStream.close();
 
         } catch (IOException e) {
-            Log.i(Constants.TAG, "retrieveContactPhoto ERROR / "  + e.getMessage());
+            Log.i(Constants.TAG, "retrieveContactPhoto ERROR / " + e.getMessage());
         }
 
 
