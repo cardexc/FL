@@ -64,6 +64,7 @@ public class Map extends Fragment {
         if (mInstance == null) {
             mInstance = new Map();
         }
+        
 
         return mInstance;
     }
